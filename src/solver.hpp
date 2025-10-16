@@ -55,10 +55,63 @@ public:
   VerletObject& addObject(sf::Vector2f position, float radius){
     return m_objects.emplace_back(position,radius);
   }
+  
+  void update(){
+    m_time += m_frame_dt;
+    const float step_dt = getStepDt();
+    for(uint32_t i{m_sub_steps};i--;){
+      applyGravity();
+      applyConstraint();
+      updateObjects(step_dt);
+    }
+  }
+
+  void setSimulationUpdateRate(uint32_t rate){
+    m_frame_dt = 1.0f / static_cast<float>(rate);
+  }
+
+  void setConstraint(sf::Vector2f position, float radius){
+    m_constraint_center = position;
+    m_constraint_radius = radius;
+  }
+
+  void setSubStepsCount(uint32_t sub_steps){
+    m_sub_steps=sub_steps;
+  }
+
+  void setObjectVelocity(VerletObject& object, sf::Vector2f v){
+    object.setVelocity(v, getStepDt());
+  }
+
+  [[nodiscard]]
+  const std::vector<VerletObject>& getObjects() const{
+    return m_objects;
+  }
+
+  [[nodiscard]]
+  sf::Vector3f getConstraint() const{
+    return {m_constraint_center.x, m_constraint_center.y, m_constraint_radius};
+  }
+
+  [[nodiscard]]
+  uint64_t getObjectsCount() const{
+    return m_objects.size();
+  }
+
+  [[nodiscard]]
+  float getTime() const{
+    return m_time;
+  }
+
+  [[nodiscard]]
+  float getStepDt() const{
+    return m_frame_dt / static_cast<float>(m_sub_steps);
+  }
+
 
 private:
   uint32_t m_sub_steps = 1;
-  sf::Vector2f m_gravity = {0.0f, 1000.0f};
+  sf::Vector2f m_gravity = {0.0f, 40.0f};
   sf::Vector2f m_constraint_center;
   float m_constraint_radius = 100.0f;
   std::vector<VerletObject> m_objects;
