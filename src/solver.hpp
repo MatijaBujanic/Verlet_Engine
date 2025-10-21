@@ -111,7 +111,7 @@ public:
 
 private:
   uint32_t m_sub_steps = 1;
-  sf::Vector2f m_gravity = {0.0f, 40.0f};
+  sf::Vector2f m_gravity = {0.0f, 100.0f};
   sf::Vector2f m_constraint_center;
   float m_constraint_radius = 100.0f;
   std::vector<VerletObject> m_objects;
@@ -124,17 +124,30 @@ private:
     }
   }
   
-  void applyConstraint(){
-    for(auto& obj : m_objects){
-      const sf::Vector2f v = m_constraint_center - obj.position;
-      const float dist = std::sqrt(v.x*v.x+v.y*v.y);
-      if(dist > (m_constraint_radius - obj.radius)){
-        const sf::Vector2f n=v/dist;
-        obj.position = m_constraint_center - n *(m_constraint_radius - obj.radius);
-      }
+  void applyConstraint()
+{
+    for (auto& obj : m_objects) {
+        const sf::Vector2f to_obj = obj.position - m_constraint_center;
+        const float dist_sq = to_obj.x * to_obj.x + to_obj.y * to_obj.y;
+        const float constraint_boundary = m_constraint_radius - obj.radius;
+        const float boundary_sq = constraint_boundary * constraint_boundary;
+        
+      if (dist_sq > boundary_sq) {
+            const float dist = sqrt(dist_sq);
+            const sf::Vector2f n = to_obj / dist;
+            
+           // Store the collision response for velocity correction
+            const sf::Vector2f collision_response = n * (dist - constraint_boundary);
+            
+            // Correct position
+            obj.position -= collision_response;
+            
+            // Simple velocity preservation - move the previous position accordingly
+            // This maintains the object's velocity while keeping it constrained
+            //obj.position_last -= collision_response * 0.95f; // 0.95 = slight energy retention
+        }
     }
-  }
-
+}
   void updateObjects(float dt){
     for(auto& obj : m_objects){
       obj.update(dt);

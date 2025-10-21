@@ -47,10 +47,22 @@ int32_t main(int32_t, char *[]) {
       if (event->is<sf::Event::Closed>()) {
         window.close();
       }
+      else if (const auto *keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+        if(keyPressed->scancode==sf::Keyboard::Scancode::Escape)
+          window.close();
+      }
     }
     if(obj_count == 0){
-      solver.addObject({200.f, 300.f}, 20.f); // Spawn near center
+      solver.addObject({400.f, 250.f}, 20.f); // Spawn near center
       obj_count++;
+    }
+
+    if (solver.getObjectsCount() > 0) {
+      auto& obj = solver.getObjects()[0];
+      auto vel = obj.getVelocity(solver.getStepDt());
+      std::cout << "Pos: (" << obj.position.x << ", " << obj.position.y << ") ";
+      std::cout << "Vel: (" << vel.x << ", " << vel.y << ") ";
+      std::cout << "Speed: " << std::sqrt(vel.x*vel.x + vel.y*vel.y) << std::endl;
     }
 
     solver.update();
