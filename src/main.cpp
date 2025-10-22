@@ -21,6 +21,8 @@ static sf::Color getRainbow(float t)
 
 
 int32_t main(int32_t, char *[]) {
+  
+  srand(time(0));
 
   constexpr int32_t window_height = 1000;
   constexpr int32_t window_width = 1000;
@@ -48,7 +50,7 @@ int32_t main(int32_t, char *[]) {
   const float        object_spawn_delay    = 0.05f;
   const float        object_spawn_speed    = 1000.0f;
   const sf::Vector2f object_spawn_position = {450.0f, 200.0f};
-  const float        object_min_radius     = 1.0f;
+  const float        object_min_radius     = 5.0f;
   const float        object_max_radius     = 20.0f;
   const uint32_t     max_objects_count     = 1000;
   const float        max_angle             = 1.0f;
@@ -71,7 +73,9 @@ int32_t main(int32_t, char *[]) {
 
     if (solver.getObjectsCount() < max_objects_count && clock.getElapsedTime().asSeconds() >= object_spawn_delay) {
       clock.restart();
-      auto&       object = solver.addObject(object_spawn_position, (10));
+      auto&       object = solver.addObject(object_spawn_position, 
+                                            static_cast <float> (rand()) / static_cast <float> (RAND_MAX)
+                                            *object_max_radius + object_min_radius);
       const float t      = solver.getTime();
       const float angle  = max_angle * sin(t) + PI * 0.5f;
       solver.setObjectVelocity(object, object_spawn_speed * sf::Vector2f{cosf(angle), sinf(angle)});
