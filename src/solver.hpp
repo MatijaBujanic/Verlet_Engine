@@ -61,6 +61,7 @@ public:
     const float step_dt = getStepDt();
     for(uint32_t i{m_sub_steps};i--;){
       applyGravity();
+      checkCollisions(step_dt);
       applyConstraint();
       updateObjects(step_dt);
     }
@@ -110,8 +111,8 @@ public:
 
 
 private:
-  uint32_t m_sub_steps = 1;
-  sf::Vector2f m_gravity = {0.0f, 100.0f};
+  uint32_t m_sub_steps = 10;
+  sf::Vector2f m_gravity = {0.0f, 45.0f};
   sf::Vector2f m_constraint_center;
   float m_constraint_radius = 100.0f;
   std::vector<VerletObject> m_objects;
@@ -124,6 +125,41 @@ private:
     }
   }
   
+  void checkCollisions(float dt)
+  {
+    const float response_coef = 1;
+    const uint64_t object_count = m_objects.size();
+
+    //Brute force on all objects
+    
+    for(uint64_t i{0}; i < object_count; i++){
+      VerletObject& object_1 = m_objects[i];
+
+      for(uint64_t k{i+1}; k < object_count; k++){
+        VerletObject &object_2 = m_objects[k];
+        const sf::Vector2f v = object_1.position - object_2.position;
+        const float dist2 = v.x * v.x + v.y * v.y;
+        const float min_dist = object_1.radius + object_2.radius;
+        //Check overlaping
+
+        if(dist2 < min_dist * min_dist){
+          const float dist = sqrt(dist2);
+          const sf::Vector2f n = v/dist;
+
+          const float mass_ratio_1 = object_1.radius / (object_1.radius + object_2.radius);
+          const float mass_ratio_2 = object_2.radius / (object_1.radius + object_2.radius);
+          const float delta = 0.5f * response_coef * (dist - min_dist);
+
+          //Update positions
+
+          object_1.position -= n*(mass_ratio_2 * delta);
+          object_2.position += n*(mass_ratio_1 * delta);
+        }
+      }
+    }
+  }
+
+
   void applyConstraint()
 {
     for (auto& obj : m_objects) {
@@ -141,7 +177,6 @@ private:
             
             // Correct position
             obj.position -= collision_response;
-            
             // Simple velocity preservation - move the previous position accordingly
             // This maintains the object's velocity while keeping it constrained
             //obj.position_last -= collision_response * 0.95f; // 0.95 = slight energy retention
