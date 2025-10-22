@@ -16,7 +16,7 @@ public:
 
     // Render objects
     sf::CircleShape circle{1.0f};
-    circle.setPointCount(32);
+    circle.setPointCount(100);
     circle.setOrigin({1.0f, 1.0f});
     const auto &objects = solver.getObjects();
 

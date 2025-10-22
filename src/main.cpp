@@ -31,7 +31,8 @@ int32_t main(int32_t, char *[]) {
   videoMode.size = {window_width, window_height};
 
   sf::RenderWindow window(videoMode, "Verlet");
-  const uint32_t frame_rate = 60;
+  const uint32_t frame_rate = 144;
+  window.setFramerateLimit(frame_rate);
 
   // std::cout<<"proba"<<std::endl;
 
@@ -44,16 +45,16 @@ int32_t main(int32_t, char *[]) {
   solver.setSimulationUpdateRate(frame_rate);
 
   // Set simulation attributes
-  const float        object_spawn_delay    = 0.08f;
-  const float        object_spawn_speed    = 100.0f;
-  const sf::Vector2f object_spawn_position = {500.0f, 200.0f};
+  const float        object_spawn_delay    = 0.05f;
+  const float        object_spawn_speed    = 1000.0f;
+  const sf::Vector2f object_spawn_position = {450.0f, 200.0f};
   const float        object_min_radius     = 1.0f;
   const float        object_max_radius     = 20.0f;
   const uint32_t     max_objects_count     = 1000;
   const float        max_angle             = 1.0f;
 
   sf::Clock clock;
-  int obj_count=0;
+  //int obj_count=0;
   // Main loop
   while (window.isOpen()) {
 
@@ -76,20 +77,6 @@ int32_t main(int32_t, char *[]) {
       solver.setObjectVelocity(object, object_spawn_speed * sf::Vector2f{cosf(angle), sinf(angle)});
       object.color = getRainbow(t);
     }
-
-
-    /*if(obj_count < 3){
-      solver.addObject({400.f, 250.f}, 20.f * (obj_count+1)); // Spawn near center
-      obj_count++;
-    }*/
-
-    /*if (solver.getObjectsCount() > 0) {
-      auto& obj = solver.getObjects()[0];
-      auto vel = obj.getVelocity(solver.getStepDt());
-      std::cout << "Pos: (" << obj.position.x << ", " << obj.position.y << ") ";
-      std::cout << "Vel: (" << vel.x << ", " << vel.y << ") ";
-      std::cout << "Speed: " << std::sqrt(vel.x*vel.x + vel.y*vel.y) << std::endl;
-    }*/
 
     solver.update();
     window.clear(sf::Color::White);
