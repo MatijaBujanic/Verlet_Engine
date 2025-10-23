@@ -43,7 +43,7 @@ int32_t main(int32_t, char *[]) {
 
   // Solver configuration
   solver.setConstraint({static_cast<float>(window_width) * 0.5f, static_cast<float>(window_height) * 0.5f}, 450.0f);
-  solver.setSubStepsCount(3);
+  solver.setSubStepsCount(8);
   solver.setSimulationUpdateRate(frame_rate);
 
   // Set simulation attributes
@@ -52,7 +52,7 @@ int32_t main(int32_t, char *[]) {
   const sf::Vector2f object_spawn_position = {450.0f, 200.0f};
   const float        object_min_radius     = 5.0f;
   const float        object_max_radius     = 20.0f;
-  const uint32_t     max_objects_count     = 1000;
+  const uint32_t     max_objects_count     = 500;
   const float        max_angle             = 1.0f;
 
   sf::Clock clock;
