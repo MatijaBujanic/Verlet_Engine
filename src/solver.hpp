@@ -183,48 +183,52 @@ private:
       grid[{cell_x,cell_y}].push_back(i);
     }
 
-    // Check collisions
-    for(const auto& [cell,indices] : grid){
-      const auto& [cell_x, cell_y] = cell;
+     // Check collisions - FIXED LOGIC
+    for(const auto& [cell, indices] : grid)
+    {
+        const auto& [cell_x, cell_y] = cell;
 
-      for(uint64_t i=0; i < indices.size(); i++)
-      {
-        VerletObject& obj1 = m_objects[indices[i]];  
-        //const float r1 = obj1.radius;
-
-        // Checkobjects in same cell
-        for (uint64_t j = i + 1; j < indices.size(); ++j) {
-            checkCollisionPair(obj1, m_objects[indices[j]], response_coef);
+        // Check all pairs within this cell
+        for(uint64_t i = 0; i < indices.size(); i++)
+        {
+            VerletObject& obj1 = m_objects[indices[i]];
+            
+            // Check other objects in same cell
+            for(uint64_t j = i + 1; j < indices.size(); j++)
+            {
+                checkCollisionPair(obj1, m_objects[indices[j]], response_coef);
+            }
         }
 
-         for (int dx = -1; dx <= 1; ++dx) {
-            for (int dy = -1; dy <= 1; ++dy) {
-                // Skip the center cell (we already checked same cell)
-                if (dx == 0 && dy == 0) continue;
+        // Check adjacent cells - ONLY FOR CERTAIN DIRECTIONS to avoid duplicates
+        const std::pair<int, int> neighbor_dirs[] = {
+            {1, 0}, {1, 1}, {0, 1}, {-1, 1}  // Only check 4 neighbors instead of 8
+        };
+
+        for(const auto& [dx, dy] : neighbor_dirs)
+        {
+            int neighbor_x = cell_x + dx;
+            int neighbor_y = cell_y + dy;
+            auto neighbor_key = std::make_pair(neighbor_x, neighbor_y);
+            
+            auto neighbor_it = grid.find(neighbor_key);
+            if(neighbor_it != grid.end())
+            {
+                const auto& current_indices = indices;
+                const auto& neighbor_indices = neighbor_it->second;
                 
-                int neighbor_x = cell_x + dx;
-                int neighbor_y = cell_y + dy;
-                auto neighbor_key = std::make_pair(neighbor_x, neighbor_y);
-                
-                // Check if this neighbor cell exists and has objects
-                auto neighbor_it = grid.find(neighbor_key);
-                if (neighbor_it != grid.end()) {
-                    const auto& neighbor_indices = neighbor_it->second;
-                    
-                    // Check all objects in the neighbor cell against current object
-                    for (uint64_t k = 0; k < neighbor_indices.size(); ++k) {
-                        // Only check if neighbor object has higher index to avoid duplicate checks
-                        if (neighbor_indices[k] > indices[i]) {
-                            checkCollisionPair(obj1, m_objects[neighbor_indices[k]], response_coef);
-                        }
+                // Check all objects in current cell against all objects in neighbor cell
+                for(uint64_t i = 0; i < current_indices.size(); i++)
+                {
+                    VerletObject& obj1 = m_objects[current_indices[i]];
+                    for(uint64_t k = 0; k < neighbor_indices.size(); k++)
+                    {
+                        checkCollisionPair(obj1, m_objects[neighbor_indices[k]], response_coef);
                     }
                 }
             }
         }
-
-      }
     }
-
   }
 
 

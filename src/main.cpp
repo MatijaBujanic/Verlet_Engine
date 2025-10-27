@@ -56,6 +56,8 @@ int32_t main(int32_t, char *[]) {
   const float        max_angle             = 2.0f;
 
   sf::Clock clock;
+  sf::Clock fpsClock;
+  int frameCount = 0;
   //int obj_count=0;
   // Main loop
   while (window.isOpen()) {
@@ -80,6 +82,15 @@ int32_t main(int32_t, char *[]) {
       const float angle  = max_angle * sin(t) + PI * 0.5f;
       solver.setObjectVelocity(object, object_spawn_speed * sf::Vector2f{cosf(angle), sinf(angle)});
       object.color = getRainbow(t);
+    }
+
+     // FPS counting
+    frameCount++;
+    if (fpsClock.getElapsedTime().asSeconds() >= 0.2f) {
+        float fps = frameCount / fpsClock.getElapsedTime().asSeconds();
+        std::cout << "FPS: " << fps << " | Objects: " << solver.getObjectsCount() << std::endl;
+        frameCount = 0;
+        fpsClock.restart();
     }
 
     solver.update();
